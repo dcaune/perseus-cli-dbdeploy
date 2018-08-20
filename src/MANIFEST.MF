@@ -1,0 +1,12 @@
+Manifest-version: 1.0
+Class-Path: @product.name@.jar
+Main-Class: com.majormode.tool.dbdeploy.VERSION
+
+Name: com/majormode/tool/dbdeploy/
+Specification-Title: Database Deployment Tool
+Specification-Vendor: Majormode
+Specification-Vendor-Id: com.majormode
+Specification-Version: @major@.@minor@
+Implementation-Title: Database Deployment Tool
+Implementation-Vendor: Majormode (support@majormode.com)
+Implementation-Version: @major@.@minor@.@release@-@build@
