@@ -19,6 +19,7 @@
 package com.majormode.tool.dbdeploy;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * Represent an SQL statement to be executed against a relational
@@ -34,21 +35,37 @@ public class SQLStatement implements Cloneable, Serializable
 
   public int m_attemptCount;
   public int m_executionStatus;
+
+  /**
+   * Collection of commands that need to be executed before every SQL
+   * statement to change run-time configuration parameters.
+   */
+  protected Collection m_runtimeParameterCommands;
+
   public String m_sqlExpression;
   public SQLScript m_sqlScript;
-
+  
+  
   /**
    * Builds an SQL statement.
    *
-   * @param sqlExpression
+   * @param sqlExpression SQL expression that needs to be executed
    * @param sqlScript reference of the SQL script file that the SQL
    *        statement comes from.
    */
   public SQLStatement(String sqlExpression,
                       SQLScript sqlScript)
   {
+    this(sqlExpression, sqlScript, null);
+  }
+
+  public SQLStatement(String sqlExpression,
+                      SQLScript sqlScript,
+                      Collection runtimeParameterCommands) 
+  {
     m_attemptCount = 0;
     m_executionStatus = EXECUTION_STATUS_UNDEFINED;
+    m_runtimeParameterCommands = runtimeParameterCommands;
     m_sqlExpression = sqlExpression;
     m_sqlScript = sqlScript;
   }
