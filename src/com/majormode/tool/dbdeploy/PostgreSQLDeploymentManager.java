@@ -26,6 +26,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -152,7 +153,7 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
       String input,
       String objectTypeName,
       SQLScript sqlScript) {
-    Vector<String> runtimeParameterCommands = new Vector<>();
+    HashMap<String, String> runtimeParameterCommands = new HashMap<>();
     Vector<SQLStatement> statements = new Vector<>();
 
     // Remove all the comment from the script file's content.
@@ -173,8 +174,9 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
       if (runtimeParameterCommandMatcher.find()) {
         String parameterName = matcher.group("parameter_name");
         String command = matcher.group(1).trim();
+        runtimeParameterCommands.put(parameterName, command);
       } else if (sqlExpression.length() > 0) {
-        statements.add(new SQLStatement(sqlExpression, sqlScript, new ArrayList(runtimeParameterCommands)));
+        statements.add(new SQLStatement(sqlExpression, sqlScript, new ArrayList(runtimeParameterCommands.values())));
       }
     }
 
