@@ -442,9 +442,8 @@ public abstract class SQLDeploymentManager {
       while (iterator.hasNext()) {
         SQLStatement sqlStatement = (SQLStatement) iterator.next();
 
-        System.out.println(
-            "Processing " + sqlStatement.m_sqlScript.m_moduleName
-            + " " + sqlStatement.m_sqlScript.m_objectTypeName);
+        System.out.println("Processing " + sqlStatement.m_sqlScript.m_moduleName
+            + " (" + sqlStatement.m_sqlScript.m_objectTypeName + ")");
 
         if (processSQLStatement(sqlStatement)) {
           sqlStatement.m_executionStatus = SQLStatement.EXECUTION_STATUS_SUCCEEDED;

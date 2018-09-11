@@ -201,10 +201,6 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
     Connection rdbmsConnection = getRBDMSConnection();
 
     try {
-      if (m_verbose_enabled) {
-        System.out.println(sqlStatement.m_sqlExpression);
-      }
-
       if (sqlStatement.m_runtimeParameterCommands != null) {
         for (Iterator iterator = sqlStatement.m_runtimeParameterCommands.iterator() ; iterator.hasNext(); ) {
           String runtimeParameterCommand = (String) iterator.next();
@@ -215,6 +211,10 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
     
           rdbmsConnection.createStatement().execute(runtimeParameterCommand);
         }
+      }
+
+      if (m_verbose_enabled) {
+        System.out.println(sqlStatement.m_sqlExpression);
       }
 
       rdbmsConnection.createStatement().execute(sqlStatement.m_sqlExpression);
