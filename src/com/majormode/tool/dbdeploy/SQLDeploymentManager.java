@@ -427,7 +427,7 @@ public abstract class SQLDeploymentManager {
             sqlScript).iterator();
         while (sqlStatementIterator.hasNext()) {
           SQLStatement sqlStatement = new SQLStatement(
-              (String) sqlStatementIterator.next(),
+              (SQLStatement) sqlStatementIterator.next(),
               sqlScript);
           sqlStatements.add(sqlStatement);
           sqlStatementHistory.add(sqlStatement);
