@@ -64,7 +64,7 @@ public class Main {
    * create_<object-group>_<object-type>.sql</code>.
    */
   protected static final String PATTERN_SCRIPT_FILE_NAME =
-    "create_([a-zA-Z0-9\\-]+)_([a-zA-Z0-9]+)\\.sql";
+    "create_([a-zA-Z0-9\\-]+)_([a-zA-Z0-9\\-]+)\\.sql";
 
   /**
    * Compiled representation of the regular expression that matches the name of
