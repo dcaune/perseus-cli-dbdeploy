@@ -24,7 +24,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -45,6 +47,13 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
    * from another standard SQL query by the character <code>;</code>.
    */
   protected static final String PATTERN_SQL_QUERY = "([^;]*);";
+
+  /**
+   * Regular expression that matches command used to set a runtime
+   * parameter.  Note: the ending semicolon has been removed when
+   * parsing this command as a SQL query.
+   */
+  protected static final String PATTERN_RUNTIME_PARAMETER_COMMAND = "(SET\\s+(SESSION\\s+|LOCAL\\s+|)(?<name>\\w+)\\s+(TO|=).+)";
 
   /**
    * Regular expression that matches PostgreSQL exception raised when
@@ -77,16 +86,22 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
   };
 
   /**
+   * Compiled representation of the regulat expression that maches a
+   * command that sets a runtime parameter.
+   */
+  protected Pattern m_patternRuntimeParameterCommand = Pattern.compile(PATTERN_RUNTIME_PARAMETER_COMMAND, Pattern.CASE_INSENSITIVE);
+
+  /**
    * Compiled representation of the regular expression that matches a
    * standard SQL query.
    */
-  protected Pattern m_patternSQLQuery = Pattern.compile(PATTERN_SQL_QUERY);
+  protected Pattern m_patternSQLQuery = Pattern.compile(PATTERN_SQL_QUERY, Pattern.CASE_INSENSITIVE);
 
   /**
    * Compile representation of the regulare expression that matches a
    * definition of a PL/pgSQL function.
    */
-  protected Pattern m_patternSQLFunctionQuery = Pattern.compile(PATTERN_SQL_FUNCTION_QUERY);
+  protected Pattern m_patternSQLFunctionQuery = Pattern.compile(PATTERN_SQL_FUNCTION_QUERY, Pattern.CASE_INSENSITIVE);
 
   /**
    * Build a new instance of a SQL deployment manager for a PostgreSQL
@@ -130,14 +145,17 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
    * @param input a stream containing SQL statements.
    * @param objectTypeName the type of database object that these SQL
    *        statements are responsible for creating.
+   * @param sqlScript the SQL script which the SQL statements are
+   *        parsed from.
    *
-   * @return a collection of <code>String<code> representing SQL
-   *         statements.
+   * @return a collection of SQL statements.
    */
-  protected Collection parseSQLStatements(
+  protected Collection<SQLStatement> parseSQLStatements(
       String input,
-      String objectTypeName) {
-    Vector statements = new Vector();
+      String objectTypeName,
+      SQLScript sqlScript) {
+    HashMap<String, String> runtimeParameterCommands = new HashMap<>();
+    Vector<SQLStatement> statements = new Vector<>();
 
     // Remove all the comment from the script file's content.
     //
@@ -151,9 +169,16 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
       : m_patternSQLQuery.matcher(input);
 
     while (matcher.find()) {
-      String statement = matcher.group(1).trim();
-      if (statement.length() > 0)
-        statements.add(statement);
+      String sqlExpression = matcher.group(1).trim();
+      Matcher runtimeParameterCommandMatcher = m_patternRuntimeParameterCommand.matcher(sqlExpression);
+
+      if (runtimeParameterCommandMatcher.find()) {
+        String parameterName = runtimeParameterCommandMatcher.group("name");
+        String command = matcher.group(1).trim();
+        runtimeParameterCommands.put(parameterName, command);
+      } else if (sqlExpression.length() > 0) {
+        statements.add(new SQLStatement(sqlExpression, sqlScript, new ArrayList(runtimeParameterCommands.values())));
+      }
     }
 
     return statements;
@@ -174,15 +199,34 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
   protected boolean processSQLStatement(SQLStatement sqlStatement)
     throws SQLException {
     Connection rdbmsConnection = getRBDMSConnection();
+
     try {
-      if (m_verbose_enabled)
-          System.out.println(sqlStatement.m_sqlExpression);
+      if (sqlStatement.m_runtimeParameterCommands != null) {
+        for (Iterator iterator = sqlStatement.m_runtimeParameterCommands.iterator() ; iterator.hasNext(); ) {
+          String runtimeParameterCommand = (String) iterator.next();
+
+          if (m_verbose_enabled) {
+            System.out.println(runtimeParameterCommand);
+          }
+    
+          rdbmsConnection.createStatement().execute(runtimeParameterCommand);
+        }
+      }
+
+      if (m_verbose_enabled) {
+        System.out.println(sqlStatement.m_sqlExpression);
+      }
+
       rdbmsConnection.createStatement().execute(sqlStatement.m_sqlExpression);
-      if (m_verbose_enabled)
-          System.out.println("Success.\n");
+
+      if (m_verbose_enabled) {
+        System.out.println("Success.\n");
+      }
     } catch (SQLException exception) {
-        if (m_verbose_enabled)
-            System.out.println("Failure: " + exception.getSQLState() + " " + exception.getMessage() + "\n");
+      if (m_verbose_enabled) {
+        System.out.println("Failure: " + exception.getSQLState() + " " + exception.getMessage() + "\n");
+      }
+
       String sqlState = exception.getSQLState();
 
       // 42703 - ERROR: column "..." referenced in foreign key
@@ -194,19 +238,21 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
       // 42P07 - ERROR: relation "..." already exists
       // 42P16 - ERROR: multiple primary keys for table "..." are not
       //         allowed
-      if ("42883".compareTo(sqlState) == 0)
+      if ("42883".compareTo(sqlState) == 0) {
         return false;
-      else if ("42P01".compareTo(sqlState) == 0) {
-          // Handle case when a table inherits from one other that has
-          // not been created yet.  We should attempt another time
-          // when all the tables have been created.
-          if ((("table".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0) &&
-               ("constraint".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0)) ||
-              (sqlStatement.m_attemptCount > 0))
-              throw exception;
+      } else if ("42P01".compareTo(sqlState) == 0) {
+        // Handle case when a table inherits from one other that has
+        // not been created yet.  We should attempt another time
+        // when all the tables have been created.
+        if ((("table".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0) &&
+              ("constraint".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0)) ||
+            (sqlStatement.m_attemptCount > 0)) {
+          throw exception;
+        }
       }
-      else if ("42703".compareTo(sqlState) == 0)
+      else if ("42703".compareTo(sqlState) == 0) {
         throw exception;
+      }
     } finally {
       rdbmsConnection.close();
     }

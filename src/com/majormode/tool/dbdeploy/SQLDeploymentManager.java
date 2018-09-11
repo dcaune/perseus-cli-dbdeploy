@@ -287,8 +287,7 @@ public abstract class SQLDeploymentManager {
               constantName,
               new SQLConstant(sqlScript, constantName, constantValue));
           System.out.println("  (defconstant " + constantName + " " + constantValue + ")");
-        }
-        else {
+        } else {
           if (sqlConstant.m_value.compareTo(constantValue) == 0)
             System.out.println("Warning: constant '" + constantName
                 + "' is defined first in file '" + sqlConstant.m_sqlScript.m_filePathname
@@ -312,13 +311,15 @@ public abstract class SQLDeploymentManager {
    * @param input a stream containing SQL statements.
    * @param objectTypeName the type of database object that these SQL
    *        statements are responsible for creating.
+   * @param sqlScript the SQL from which the SQL statements are parsed
+   *        from.
    *
-   * @return a collection of <code>String<code> representing SQL
-   *         statements.
+   * @return a collection of SQL statements.
    */
-  protected abstract Collection parseSQLStatements(
+  protected abstract Collection<SQLStatement> parseSQLStatements(
       String input,
-      String objectTypeName);
+      String objectTypeName,
+      SQLScript sqlScript);
 
   /**
    * Execute all the SQL statements declared in the SQL script files
@@ -422,11 +423,11 @@ public abstract class SQLDeploymentManager {
         //
         Iterator sqlStatementIterator = parseSQLStatements(
             sqlScriptContent,
-            sqlScript.m_objectTypeName).iterator();
+            sqlScript.m_objectTypeName,
+            sqlScript).iterator();
+        
         while (sqlStatementIterator.hasNext()) {
-          SQLStatement sqlStatement = new SQLStatement(
-              (String) sqlStatementIterator.next(),
-              sqlScript);
+          SQLStatement sqlStatement = (SQLStatement) sqlStatementIterator.next();
           sqlStatements.add(sqlStatement);
           sqlStatementHistory.add(sqlStatement);
         }
@@ -441,9 +442,8 @@ public abstract class SQLDeploymentManager {
       while (iterator.hasNext()) {
         SQLStatement sqlStatement = (SQLStatement) iterator.next();
 
-        System.out.println(
-            "Processing " + sqlStatement.m_sqlScript.m_moduleName
-            + " " + sqlStatement.m_sqlScript.m_objectTypeName);
+        System.out.println("Processing " + sqlStatement.m_sqlScript.m_moduleName
+            + " (" + sqlStatement.m_sqlScript.m_objectTypeName + ")");
 
         if (processSQLStatement(sqlStatement)) {
           sqlStatement.m_executionStatus = SQLStatement.EXECUTION_STATUS_SUCCEEDED;
