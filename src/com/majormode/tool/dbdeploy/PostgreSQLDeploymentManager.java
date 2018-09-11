@@ -52,7 +52,7 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
    * Regular expression that matches command used to set a runtime
    * parameter.
    */
-  protected static final String PATTERN_RUNTIME_PARAMETER_COMMAND = "(^SET\\s+(SESSION|LOCAL|)\\s*(?<parameter_name>\\w+)\\s+(TO|=)[^;]*;)";
+  protected static final String PATTERN_RUNTIME_PARAMETER_COMMAND = "(^SET\\s+(SESSION|LOCAL|)\\s*(?<name>\\w+)\\s+(TO|=)[^;]*;)";
 
   /**
    * Regular expression that matches PostgreSQL exception raised when
@@ -172,7 +172,7 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
       Matcher runtimeParameterCommandMatcher = m_patternRuntimeParameterCommand.matcher(sqlExpression);
 
       if (runtimeParameterCommandMatcher.find()) {
-        String parameterName = matcher.group("parameter_name");
+        String parameterName = matcher.group("name");
         String command = matcher.group(1).trim();
         runtimeParameterCommands.put(parameterName, command);
       } else if (sqlExpression.length() > 0) {
