@@ -177,7 +177,6 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
         String command = matcher.group(1).trim();
         runtimeParameterCommands.put(parameterName, command);
       } else if (sqlExpression.length() > 0) {
-        System.out.println("Runtime Parameter Commands: " + runtimeParameterCommands.values().size());
         statements.add(new SQLStatement(sqlExpression, sqlScript, new ArrayList(runtimeParameterCommands.values())));
       }
     }
@@ -208,7 +207,12 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
 
       if (sqlStatement.m_runtimeParameterCommands != null) {
         for (Iterator iterator = sqlStatement.m_runtimeParameterCommands.iterator() ; iterator.hasNext(); ) {
-          String runtimeParameterCommand = (String) iterator.next();  
+          String runtimeParameterCommand = (String) iterator.next();
+
+          if (m_verbose_enabled) {
+            System.out.println(runtimeParameterCommand);
+          }
+    
           rdbmsConnection.createStatement().execute(runtimeParameterCommand);
         }
       }
