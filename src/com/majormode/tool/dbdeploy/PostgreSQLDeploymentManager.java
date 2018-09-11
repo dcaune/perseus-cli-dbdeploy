@@ -52,7 +52,7 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
    * Regular expression that matches command used to set a runtime
    * parameter.
    */
-  protected static final String PATTERN_RUNTIME_PARAMETER_COMMAND = "(^SET\\s+(SESSION|LOCAL|)\\s*(?<name>\\w+)\\s+(TO|=)[^;]*;)";
+  protected static final String PATTERN_RUNTIME_PARAMETER_COMMAND = "(SET\\s+(SESSION\\s+|LOCAL\\s+|)(?<name>\\w+)\\s+(TO|=)[^;]*;)";
 
   /**
    * Regular expression that matches PostgreSQL exception raised when
