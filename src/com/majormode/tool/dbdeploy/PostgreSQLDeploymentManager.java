@@ -169,7 +169,10 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
 
     while (matcher.find()) {
       String sqlExpression = matcher.group(1).trim();
+      System.out.println("SQL expression parsed = " + sqlExpression);
+
       Matcher runtimeParameterCommandMatcher = m_patternRuntimeParameterCommand.matcher(sqlExpression);
+      System.out.println("Is runtime parameter command? " + untimeParameterCommandMatcher.find());
 
       if (runtimeParameterCommandMatcher.find()) {
         String parameterName = matcher.group("name");
