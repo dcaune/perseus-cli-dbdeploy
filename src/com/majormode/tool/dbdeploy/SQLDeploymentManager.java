@@ -425,10 +425,9 @@ public abstract class SQLDeploymentManager {
             sqlScriptContent,
             sqlScript.m_objectTypeName,
             sqlScript).iterator();
+        
         while (sqlStatementIterator.hasNext()) {
-          SQLStatement sqlStatement = new SQLStatement(
-              (SQLStatement) sqlStatementIterator.next(),
-              sqlScript);
+          SQLStatement sqlStatement = (SQLStatement) sqlStatementIterator.next();
           sqlStatements.add(sqlStatement);
           sqlStatementHistory.add(sqlStatement);
         }
