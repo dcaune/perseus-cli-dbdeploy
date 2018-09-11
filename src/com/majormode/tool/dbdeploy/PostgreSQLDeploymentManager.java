@@ -76,6 +76,7 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
       "type",
       "sequence",
       "table",
+      "materialized-view",
       "view",
       "constraint",
       "index",
