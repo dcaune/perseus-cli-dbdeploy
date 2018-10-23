@@ -47,7 +47,7 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
   /**
    * Regular expression that matches standard SQL query delimited from another
    * standard SQL query by the character <code>;</code>, or bulk loading
-   * exoression ending with <code>\.</code>.
+   * expression ending with <code>\.</code>.
    */
   protected static final String PATTERN_SQL_QUERY = "(COPY\\s+[^\\\\]+\\\\\\.)|(^(?!COPY)[^;]*);";
 
