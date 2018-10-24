@@ -49,7 +49,7 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
    * standard SQL query by the character <code>;</code>, or bulk loading
    * expression ending with <code>\.</code>.
    */
-  protected static final String PATTERN_SQL_QUERY = "(COPY\\s+[^\\\\]+\\\\\\.)|(^(?!COPY)[^;]*);";
+  protected static final String PATTERN_SQL_QUERY = "(((?!COPY)[^;])*;)|(COPY((?!\\\\\\.)[\\s\\S])*\\\\\\.)";
 
   /**
    * Regular expression that matches command used to set a runtime parameter.
@@ -156,15 +156,18 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
         : m_patternSQLQuery.matcher(input);
 
     while (matcher.find()) {
-      System.out.println(matcher.group(0));
-
       String sqlExpression = matcher.group(0).trim();
+      System.out.println(sqlExpression);
       Matcher runtimeParameterCommandMatcher = m_patternRuntimeParameterCommand.matcher(sqlExpression);
 
+      // If the SQL expression corresponds to a runtime parameter command, add
+      // it to the corresponding dictionary with the name of the parameter as
+      // the key.
       if (runtimeParameterCommandMatcher.find()) {
         String parameterName = runtimeParameterCommandMatcher.group("name");
-        String command = matcher.group(1).trim();
-        runtimeParameterCommands.put(parameterName, command);
+        runtimeParameterCommands.put(parameterName, sqlExpression);
+
+      // Add any other SQL expression in the list of statements to be executed.
       } else if (sqlExpression.length() > 0) {
         statements.add(new SQLStatement(sqlExpression, sqlScript, new ArrayList(runtimeParameterCommands.values())));
       }
@@ -220,8 +223,8 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
           exception.printStackTrace();
         }
 
+      // Execute standard SQL expression with the classic JDBC statement class.
       } else {
-        // Execute standard SQL expression with the classic JDBC statement class.
         rdbmsConnection.createStatement().execute(sqlStatement.m_sqlExpression);
       }
 
