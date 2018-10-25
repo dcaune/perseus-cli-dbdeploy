@@ -74,14 +74,14 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
    * Exception in thread "main" org.postgresql.util.PSQLException: ERROR: function get_job_hierarchy() does not exist
    * </pre>
    */
-  protected static final String PATTERN_DEPENDENCY_EXCEPION = "does not exist";
+  protected static final String PATTERN_DEPENDENCY_EXCEPTION = "does not exist";
 
   /**
    * List of the database objects, which PostgreSQL supports, declared in their
    * dependency order.
    */
   protected static final String[] OBJECT_TYPE_NAME_ORDERS = { "constant", "type", "sequence", "table",
-      "materialized-view", "view", "constraint", "index", "function", "job", "trigger", "dataset" };
+      "constraint", "dataset", "materialized-view", "view", "index", "function", "job", "trigger" };
 
   /**
    * Compiled representation of the regulat expression that maches a command that
