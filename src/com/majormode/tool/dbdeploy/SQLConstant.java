@@ -36,7 +36,7 @@ public class SQLConstant
   public SQLScript m_sqlScript;
   
   /**
-   * Litteral value of the constant.
+   * Literal value of the constant.
    */
   public String m_value;
   
@@ -45,7 +45,7 @@ public class SQLConstant
    *
    * @param sqlScript SQL script where the constant is declared.
    * @param name name of the constant.
-   * @param value litteral value of the constant.
+   * @param value literal value of the constant.
    */
   public SQLConstant(SQLScript sqlScript,
                      String name,
