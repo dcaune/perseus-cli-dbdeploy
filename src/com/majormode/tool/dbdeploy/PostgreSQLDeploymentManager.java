@@ -80,8 +80,8 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
    * List of the database objects, which PostgreSQL supports, declared in their
    * dependency order.
    */
-  protected static final String[] OBJECT_TYPE_NAME_ORDERS = { "constant", "type", "sequence", "table",
-      "constraint", "dataset", "materialized-view", "view", "index", "function", "job", "trigger" };
+  protected static final String[] OBJECT_TYPE_NAME_ORDERS = { "constant", "type", "sequence", "table", "constraint",
+      "dataset", "materialized-view", "view", "index", "function", "job", "trigger" };
 
   /**
    * Compiled representation of the regulat expression that maches a command that
@@ -166,7 +166,7 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
         String parameterName = runtimeParameterCommandMatcher.group("name");
         runtimeParameterCommands.put(parameterName, sqlExpression);
 
-      // Add any other SQL expression in the list of statements to be executed.
+        // Add any other SQL expression in the list of statements to be executed.
       } else if (sqlExpression.length() > 0) {
         statements.add(new SQLStatement(sqlExpression, sqlScript, new ArrayList(runtimeParameterCommands.values())));
       }
@@ -222,7 +222,7 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
           exception.printStackTrace();
         }
 
-      // Execute standard SQL expression with the classic JDBC statement class.
+        // Execute standard SQL expression with the classic JDBC statement class.
       } else {
         rdbmsConnection.createStatement().execute(sqlStatement.m_sqlExpression);
       }
@@ -230,9 +230,7 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
       if (m_verbose_enabled) {
         System.out.println("Success.\n");
       }
-    } catch (
-
-    SQLException exception) {
+    } catch (SQLException exception) {
       if (m_verbose_enabled) {
         System.out.println("Failure: " + exception.getSQLState() + " " + exception.getMessage() + "\n");
       }
@@ -251,10 +249,11 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
       if ("42883".compareTo(sqlState) == 0) {
         return false;
       } else if ("42P01".compareTo(sqlState) == 0) {
-        // Handle case when a table inherits from one other that has
-        // not been created yet. We should attempt another time
-        // when all the tables have been created.
+        // Handle the case when a table inherits from one other that has not
+        // been created yet. We should attempt another time hen all the
+        // tables have been created.
         if ((("table".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0)
+            && ("materialized-view".compareTo(sqlStatement.sqlStatement.m_objectTypeName) != 0)
             && ("constraint".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0))
             || (sqlStatement.m_attemptCount > 0)) {
           throw exception;
