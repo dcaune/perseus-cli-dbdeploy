@@ -253,7 +253,7 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
         // been created yet. We should attempt another time hen all the
         // tables have been created.
         if ((("table".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0)
-            && ("materialized-view".compareTo(sqlStatement.sqlStatement.m_objectTypeName) != 0)
+            && ("materialized-view".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0)
             && ("constraint".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0))
             || (sqlStatement.m_attemptCount > 0)) {
           throw exception;
