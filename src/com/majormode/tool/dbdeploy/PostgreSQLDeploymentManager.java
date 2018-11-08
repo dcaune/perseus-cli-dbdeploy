@@ -250,11 +250,15 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
         return false;
       } else if ("42P01".compareTo(sqlState) == 0) {
         // Handle the case when a table inherits from one other that has not
-        // been created yet. We should attempt another time hen all the
-        // tables have been created.
+        // been created yet, when a materialized view depends on one other or
+        // on a function that has not been created yet.
+        //
+        // We should attempt another time when all the database objects have been
+        // created.
         if ((("table".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0)
             && ("materialized-view".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0)
-            && ("constraint".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0))
+            && ("constraint".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0)
+            && ("index".compareTo(sqlStatement.m_sqlScript.m_objectTypeName) != 0))
             || (sqlStatement.m_attemptCount > 0)) {
           throw exception;
         }
