@@ -249,9 +249,9 @@ public class PostgreSQLDeploymentManager extends SQLDeploymentManager {
       if ("42883".compareTo(sqlState) == 0) {
         return false;
       } else if ("42P01".compareTo(sqlState) == 0) {
-        // Handle the case when a table inherits from one other that has not
-        // been created yet, when a materialized view depends on one other or
-        // on a function that has not been created yet.
+        // Handle the case when a table inherits from one other that has not been
+        // created yet, when a materialized view depends on one other or on a function
+        // that has not been created yet.
         //
         // We should attempt another time when all the database objects have been
         // created.
